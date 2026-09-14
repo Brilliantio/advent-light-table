@@ -12,6 +12,7 @@
   --text: #e8eefc;
   --muted: #9fb0d0;
   --border: #243149;
+  --hold: #f59e0b;
 }
 * { box-sizing: border-box; }
 body {
@@ -25,6 +26,14 @@ header {
   backdrop-filter: blur(8px);
 }
 h1 { font-size: 16px; margin: 0; font-weight: 650; }
+.subhead { width: 100%; font-size: 12px; color: var(--muted); }
+.hold-banner {
+  width: 100%; padding: 10px 12px; border-radius: 10px;
+  background: color-mix(in srgb, var(--hold) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--hold) 45%, transparent);
+  font-size: 13px; line-height: 1.4;
+}
+.hold-banner strong { color: #fcd34d; }
 .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
 button, select {
   background: var(--panel); color: var(--text); border: 1px solid var(--border);
@@ -40,6 +49,7 @@ main { padding: 16px; }
   overflow: hidden; cursor: pointer; border-top: 4px solid var(--state);
 }
 .card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; background: #000; }
+.card img.missing { opacity: .35; filter: grayscale(1); }
 .meta { padding: 10px 12px 12px; }
 .badge {
   display: inline-block; font-size: 11px; padding: 2px 7px; border-radius: 999px;
@@ -71,11 +81,14 @@ a { color: #93c5fd; }
   border-radius: 12px; margin-bottom: 8px; background: var(--panel); cursor: pointer;
 }
 .queue-item img { width: 54px; height: 81px; object-fit: cover; border-radius: 6px; }
+.loading { padding: 24px; color: var(--muted); text-align: center; }
 </style>
 </head>
 <body>
 <header>
-  <h1>Advent Cover Light Table · priority cockpit</h1><div style="width:100%;font-size:12px;color:#9fb0d0">Brilliantio · Mastermind share · craft eye-on only · not list-ready</div>
+  <h1>Advent Cover Light Table · priority cockpit</h1>
+  <div class="subhead">Brilliantio · Mastermind share · craft eye-on only · not list-ready · images via Cloudinary CDN</div>
+  <div id="holdBanner" class="hold-banner" hidden></div>
   <div class="filters">
     <button id="viewGrid" class="active">Grid</button>
     <button id="viewQueue">Priority queue</button>
@@ -89,13 +102,70 @@ a { color: #93c5fd; }
   </div>
 </header>
 <main>
-  <div id="grid" class="grid"></div>
+  <div id="loading" class="loading">Loading gallery…</div>
+  <div id="grid" class="grid" hidden></div>
   <div id="queue" class="queue"></div>
 </main>
 <div class="drawer-bg" id="bg"></div>
 <aside class="drawer" id="drawer"></aside>
 <script>
-const CARDS = [{"id": "ADV-001", "rank": 1, "state": "hold", "why": "Primary phrase book advent calendar; only skin with remote comps (Title+Cover HOLD); B2/B3 preferred; furthest after gates clear.", "name": "ADV-001 The Book Advent Calendar — 6–12 · 24 STORIES · B2/B3 · BRI-3897 HOLD", "summary": "Q4 Advent factory · ages 6–12 · 24 STORIES · Cover B family (B2/B3) · first publish candidate · BRI-3897 HOLD · BOOK_ID TBD · not listed", "url": "https://linear.app/brilliantio/project/adv-001-the-book-advent-calendar-6-12-24-stories-b2b3-bri-3897-hold-50003717a47a", "preferredVariant": "B3", "hero": "renders/ADV-001-B3.jpg", "variants": [{"label": "A", "src": "renders/ADV-001-A.jpg"}, {"label": "B", "src": "renders/ADV-001-B.jpg"}, {"label": "B2", "src": "renders/ADV-001-B2.jpg"}, {"label": "B3", "src": "renders/ADV-001-B3.jpg"}, {"label": "book-advent-stories", "src": "renders/ADV-001-book-advent-stories.jpg"}], "color": "#f59e0b"}, {"id": "ADV-005", "rank": 2, "state": "shortlist", "why": "Shortlist; method differentiation ONE STORY · 24 CHAPTERS; no comps yet.", "name": "ADV-005 Christmas Countdown Storybook Advent — ages 5–9 · ONE STORY 24 CHAPTERS", "summary": "Q4 Advent factory skin · ages 5–9 · ONE STORY · 24 CHAPTERS · cover renders ready · BOOK_ID TBD · not listed yet", "url": "https://linear.app/brilliantio/project/adv-005-christmas-countdown-storybook-advent-ages-5-9-one-story-24-adb519599d8a", "preferredVariant": "B", "hero": "renders/ADV-005-B.jpg", "variants": [{"label": "A", "src": "renders/ADV-005-A.jpg"}, {"label": "B", "src": "renders/ADV-005-B.jpg"}, {"label": "countdown-storybook-advent", "src": "renders/ADV-005-countdown-storybook-advent.jpg"}], "color": "#6366f1"}, {"id": "ADV-011", "rank": 3, "state": "shortlist", "why": "Shortlist; epistolary 24 LETTERS; younger gift lane; no comps yet.", "name": "ADV-011 Letters from the North Pole — ages 4–8 · 24 LETTERS", "summary": "Q4 Advent factory skin · ages 4–8 · 24 LETTERS · epistolary keepsake · cover renders ready · BOOK_ID TBD · not listed yet", "url": "https://linear.app/brilliantio/project/adv-011-letters-from-the-north-pole-ages-4-8-24-letters-7f3438cc03fc", "preferredVariant": "B", "hero": "renders/ADV-011-B.jpg", "variants": [{"label": "A", "src": "renders/ADV-011-A.jpg"}, {"label": "B", "src": "renders/ADV-011-B.jpg"}, {"label": "north-pole-letters-advent", "src": "renders/ADV-011-north-pole-letters-advent.jpg"}], "color": "#6366f1"}, {"id": "ADV-031", "rank": 4, "state": "craft", "why": "Coloring $12.99 royalty lock; secondary phrase; volume after story shortlist.", "name": "ADV-031 Advent Calendar Coloring Book — ages 6+ · list $12.99", "summary": "Q4 Advent factory skin · ages 6+ · daily-door coloring · list $12.99 locked · cover renders ready · BOOK_ID TBD · not listed yet", "url": "https://linear.app/brilliantio/project/adv-031-advent-calendar-coloring-book-ages-6-list-dollar1299-72971d129654", "preferredVariant": "B", "hero": "renders/ADV-031-B.jpg", "variants": [{"label": "A", "src": "renders/ADV-031-A.jpg"}, {"label": "B", "src": "renders/ADV-031-B.jpg"}, {"label": "advent-coloring", "src": "renders/ADV-031-advent-coloring.jpg"}], "color": "#64748b"}, {"id": "ADV-DAD", "rank": 5, "state": "craft", "why": "Gift humour shelf head; not first-wave list.", "name": "ADV-DAD Dad Jokes Advent Calendar — gift-for-dad/family", "summary": "Q4 Advent factory skin · gift-for-dad/family · dad jokes Advent · cover renders ready · BOOK_ID TBD · not listed yet", "url": "https://linear.app/brilliantio/project/adv-dad-dad-jokes-advent-calendar-gift-for-dadfamily-fadce57f29da", "preferredVariant": "B", "hero": "renders/ADV-DAD-B.jpg", "variants": [{"label": "A", "src": "renders/ADV-DAD-A.jpg"}, {"label": "B", "src": "renders/ADV-DAD-B.jpg"}, {"label": "jokes-advent", "src": "renders/ADV-DAD-jokes-advent.jpg"}], "color": "#64748b"}, {"id": "ADV-WYR", "rank": 6, "state": "craft", "why": "Family game Advent; pack queue.", "name": "ADV-WYR Family Would You Rather Advent — family game night", "summary": "Q4 Advent factory skin · family game night · Would You Rather Advent · cover renders ready · BOOK_ID TBD · not listed yet", "url": "https://linear.app/brilliantio/project/adv-wyr-family-would-you-rather-advent-family-game-night-ea8a82f8555d", "preferredVariant": "B", "hero": "renders/ADV-WYR-B.jpg", "variants": [{"label": "A", "src": "renders/ADV-WYR-A.jpg"}, {"label": "B", "src": "renders/ADV-WYR-B.jpg"}, {"label": "family-advent", "src": "renders/ADV-WYR-family-advent.jpg"}], "color": "#64748b"}, {"id": "ADV-026", "rank": 7, "state": "craft", "why": "Bedtime humour payload; pack queue.", "name": "ADV-026 Pajama Plot Silly Night Tales Advent — ages 4–8", "summary": "Q4 Advent factory skin · ages 4–8 · Pajama Plot silly night tales · cover renders ready · BOOK_ID TBD · not listed yet", "url": "https://linear.app/brilliantio/project/adv-026-pajama-plot-silly-night-tales-advent-ages-4-8-f49706798136", "preferredVariant": "B", "hero": "renders/ADV-026-B.jpg", "variants": [{"label": "A", "src": "renders/ADV-026-A.jpg"}, {"label": "B", "src": "renders/ADV-026-B.jpg"}], "color": "#64748b"}, {"id": "ADV-013", "rank": 8, "state": "craft", "why": "Teacher classroom Advent; pack queue.", "name": "ADV-013 The Teacher's Advent Read-Aloud Book — K–5", "summary": "Q4 Advent factory skin · K–5 classroom · teacher Advent read-aloud · cover renders ready · BOOK_ID TBD · not listed yet", "url": "https://linear.app/brilliantio/project/adv-013-the-teachers-advent-read-aloud-book-k-5-10e52d8ea9e2", "preferredVariant": "B", "hero": "renders/ADV-013-B.jpg", "variants": [{"label": "A", "src": "renders/ADV-013-A.jpg"}, {"label": "B", "src": "renders/ADV-013-B.jpg"}], "color": "#64748b"}, {"id": "ADV-010", "rank": 9, "state": "craft", "why": "Screen-free Advent; pack queue.", "name": "ADV-010 The Screen-Free Advent Book Calendar — ages 4–10", "summary": "Q4 Advent factory skin · ages 4–10 · screen-free book Advent · cover renders ready · BOOK_ID TBD · not listed yet", "url": "https://linear.app/brilliantio/project/adv-010-the-screen-free-advent-book-calendar-ages-4-10-47418143f491", "preferredVariant": "B", "hero": "renders/ADV-010-B.jpg", "variants": [{"label": "A", "src": "renders/ADV-010-A.jpg"}, {"label": "B", "src": "renders/ADV-010-B.jpg"}], "color": "#64748b"}, {"id": "ADV-041", "rank": 10, "state": "craft", "why": "STEM how-it-works; ethics-sensitive lane; pack queue.", "name": "ADV-041 How Does That Work STEM Advent Book — ages 8–12", "summary": "Q4 Advent factory skin · ages 8–12 · STEM how-it-works Advent · cover renders ready · BOOK_ID TBD · not listed yet", "url": "https://linear.app/brilliantio/project/adv-041-how-does-that-work-stem-advent-book-ages-8-12-53ba73be9b98", "preferredVariant": "B", "hero": "renders/ADV-041-B.jpg", "variants": [{"label": "A", "src": "renders/ADV-041-A.jpg"}, {"label": "B", "src": "renders/ADV-041-B.jpg"}], "color": "#64748b"}];
+const CLOUDINARY_HOST = 'res.cloudinary.com';
+
+let CARDS = [];
+let IMAGE_MAP = {};
+let mapStatus = 'hold';
+
+function isCloudinaryUrl(url) {
+  return typeof url === 'string' && url.startsWith('https://') && url.includes(CLOUDINARY_HOST);
+}
+
+function resolveImage(key) {
+  const entry = IMAGE_MAP[key];
+  if (!entry) return null;
+  if (typeof entry === 'string') return isCloudinaryUrl(entry) ? entry : null;
+  const url = entry.secure_url || entry.url;
+  return isCloudinaryUrl(url) ? url : null;
+}
+
+function hydrateCards(cards) {
+  return cards.map(c => {
+    const variants = c.variants.map(v => ({ ...v, src: resolveImage(v.key) }));
+    const hero = resolveImage(c.heroKey) || variants.find(v => v.src)?.src || null;
+    return { ...c, hero, variants };
+  });
+}
+
+function showHoldBanner(manifest, map) {
+  const el = document.getElementById('holdBanner');
+  const mapped = Object.values(map.images || {}).filter(isCloudinaryUrl).length;
+  const total = Object.keys(map.images || {}).length;
+  const target = manifest.conceptCountTarget || CARDS.length;
+  el.hidden = false;
+  el.innerHTML = `<strong>CDN HOLD</strong> — ${map.note || 'Awaiting Cloudinary secure_url map.'} `
+    + `Concepts loaded: <strong>${CARDS.length}/${target}</strong>. `
+    + `Images mapped: <strong>${mapped}/${total}</strong>. `
+    + `Excluded on Desktop: Laugh-Off · Impossible Questions.`;
+}
+
+async function boot() {
+  const [manifestRes, mapRes] = await Promise.all([
+    fetch('cards.json'),
+    fetch('cloudinary-map.json'),
+  ]);
+  if (!manifestRes.ok || !mapRes.ok) throw new Error('Failed to load gallery data');
+  const manifest = await manifestRes.json();
+  const map = await mapRes.json();
+  mapStatus = map.status || 'hold';
+  IMAGE_MAP = map.images || {};
+  CARDS = hydrateCards(manifest.cards || []);
+  if (mapStatus === 'hold' || Object.values(IMAGE_MAP).some(v => v == null)) {
+    showHoldBanner(manifest, map);
+  }
+  document.getElementById('loading').hidden = true;
+  document.getElementById('grid').hidden = false;
+  initUI();
+}
+
 const grid = document.getElementById('grid');
 const queue = document.getElementById('queue');
 const drawer = document.getElementById('drawer');
@@ -103,11 +173,15 @@ const bg = document.getElementById('bg');
 const idFilter = document.getElementById('idFilter');
 const stateFilter = document.getElementById('stateFilter');
 
-CARDS.forEach(c => {
-  const o = document.createElement('option');
-  o.value = c.id; o.textContent = c.id;
-  idFilter.appendChild(o);
-});
+function initUI() {
+  idFilter.innerHTML = '<option value="all">All concepts</option>';
+  CARDS.forEach(c => {
+    const o = document.createElement('option');
+    o.value = c.id; o.textContent = c.id;
+    idFilter.appendChild(o);
+  });
+  render();
+}
 
 function filtered() {
   return CARDS.filter(c => {
@@ -117,6 +191,11 @@ function filtered() {
   });
 }
 
+function imgTag(src, alt, cls) {
+  if (src) return `<img src="${src}" alt="${alt}" loading="lazy" class="${cls || ''}" />`;
+  return `<img alt="${alt} (awaiting Cloudinary)" class="missing ${cls || ''}" />`;
+}
+
 function openCard(c, variantSrc) {
   const src = variantSrc || c.hero;
   drawer.innerHTML = `
@@ -124,15 +203,19 @@ function openCard(c, variantSrc) {
     <div class="rank">Priority #${c.rank} · preferred ${c.preferredVariant}</div>
     <h2>${c.id}</h2>
     <p><strong>${c.name}</strong></p>
-    <img id="heroImg" src="${src}" alt="${c.id}" />
-    <div class="variants">${c.variants.map(v => `<button data-src="${v.src}">${v.label}</button>`).join('')}</div>
+    ${src ? `<img id="heroImg" src="${src}" alt="${c.id}" />` : `<p><em>Cover awaiting Cloudinary secure_url</em></p>`}
+    <div class="variants">${c.variants.map(v => `<button data-src="${v.src || ''}" data-key="${v.key}" ${v.src ? '' : 'disabled'}>${v.label}</button>`).join('')}</div>
     <p><strong>Why this priority</strong><br>${c.why || '—'}</p>
     <p>${c.summary || ''}</p>
     ${c.url ? `<p><a href="${c.url}" target="_blank" rel="noopener">Open Linear project</a></p>` : ''}
-    <p style="font-size:12px;color:#7c8db0">File: ${src.replace('renders/','')}</p>
+    <p style="font-size:12px;color:#7c8db0">File key: ${c.heroKey}</p>
   `;
   drawer.querySelectorAll('.variants button').forEach(b => {
-    b.onclick = () => document.getElementById('heroImg').src = b.dataset.src;
+    if (!b.dataset.src) return;
+    b.onclick = () => {
+      const img = document.getElementById('heroImg');
+      if (img) img.src = b.dataset.src;
+    };
   });
   drawer.classList.add('open'); bg.classList.add('open');
 }
@@ -142,7 +225,7 @@ function render() {
   const list = filtered();
   grid.innerHTML = list.map(c => `
     <article class="card" style="--state:${c.color}" data-id="${c.id}">
-      <img src="${c.hero}" alt="${c.id}" loading="lazy" />
+      ${imgTag(c.hero, c.id)}
       <div class="meta">
         <span class="badge" style="--state:${c.color}">${c.state}</span>
         <div class="rank">#${c.rank} · ${c.id} · ${c.preferredVariant}</div>
@@ -155,7 +238,7 @@ function render() {
   });
   queue.innerHTML = list.map(c => `
     <div class="queue-item" data-id="${c.id}" style="border-left:4px solid ${c.color}">
-      <img src="${c.hero}" alt="" />
+      ${imgTag(c.hero, '', '')}
       <div>
         <div class="badge" style="--state:${c.color}">${c.state}</div>
         <div><strong>#${c.rank} ${c.id}</strong></div>
@@ -177,7 +260,10 @@ document.getElementById('viewQueue').onclick = (e) => {
   grid.style.display = 'none'; queue.classList.add('show');
 };
 idFilter.onchange = stateFilter.onchange = render;
-render();
+
+boot().catch(err => {
+  document.getElementById('loading').textContent = 'Failed to load gallery: ' + err.message;
+});
 </script>
 </body>
 </html>
